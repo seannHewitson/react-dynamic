@@ -1,58 +1,43 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
+import React, { Component } from 'react';
 
-let modules = [];
-var testModules = [
-    {
-        name: 'helloWorld',
-        props: {
-            text: 'Hello'
-        }
-    },
-    {
-        name: 'helloWorld',
-        props: {
-            text: 'world'
-        }
-    }
-]
+export default class Column extends Component{
 
-class App extends React.Component{
-
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
+        this.props = props;
         this.state = {
             modules: []
         };
     }
 
     componentDidMount(){
-        //  Fetch Components list from API.
-        //  Iterate API and import actual compoments.
-        testModules.forEach((test) => {
-            modules.push({
-                module: require(`../modules/${test.name}/index.jsx`).default,
-                props: test.props
+        let modules = [];
+        fetch(`/api/module/read/${this.props.row} ${this.props.align}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach((mod) => {
+                modules.push({
+                    module: require(`../modules/${mod.name}/index.jsx`).default,
+                    props: mod.props
+                })
             })
-        })
-        //  Update State, loading all components.
-        this.setState({modules: modules});
+			this.setState({modules: modules});
+        });
     }
 
     render(){
         var self = this;
         return (
-            <div>{(
-                Object.keys(self.state.modules).map(function(key, index){
-                    const Comp = self.state.modules[key].module;
-                    return (
-                        <Comp key={index} {...self.state.modules[key].props} />
-                    );
-                })
-            )}</div>
+            <div className={`${this.props.align} col`}>{
+                <div>{(
+                    Object.keys(self.state.modules).map(function(key, index){
+                        const Comp = self.state.modules[key].module;
+                        return (
+                            <Comp key={index} {...self.state.modules[key].props} />
+                        );
+                    })
+                )}</div>
+            }</div>
         )
     }
 }
-
-ReactDOM.render(<App />, document.getElementById('app'))
